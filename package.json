@@ -1,6 +1,6 @@
 {
   "name": "screenshotrun-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for ScreenshotRun Screenshot API — let AI agents capture website screenshots",
   "keywords": [
     "mcp",
