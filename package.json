@@ -1,7 +1,7 @@
 {
   "name": "screenshotrun-mcp",
-  "version": "1.0.2",
-  "mcpName": "io.github.screenshotrun/screenshotrun-mcp",
+  "version": "1.0.3",
+  "mcpName": "io.github.webmox/screenshotrun-mcp",
   "description": "MCP server for ScreenshotRun Screenshot API — let AI agents capture website screenshots",
   "keywords": [
     "mcp",
