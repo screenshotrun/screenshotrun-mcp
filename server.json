@@ -1,6 +1,6 @@
 {
-  "$schema": "https://registry.modelcontextprotocol.io/schemas/server.json",
-  "name": "io.github.webmox/screenshotrun-mcp",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "io.github.screenshotrun/screenshotrun-mcp",
   "description": "Capture website screenshots in AI agents. Full-page, dark mode, mobile, OG images, base64.",
   "version": "1.0.2",
   "repository": {
@@ -11,13 +11,16 @@
     {
       "registryType": "npm",
       "identifier": "screenshotrun-mcp",
-      "version": "latest",
-      "runtime_hint": "npx",
-      "environment_variables": [
+      "version": "1.0.2",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
         {
           "name": "SCREENSHOTRUN_API_KEY",
           "description": "Your ScreenshotRun API key. Get one free at screenshotrun.com (200 screenshots/month).",
-          "required": true
+          "isRequired": true
         }
       ]
     }
