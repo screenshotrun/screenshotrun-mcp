@@ -1,0 +1,21 @@
+{
+  "name": "io.github.screenshotrun/screenshotrun-mcp",
+  "description": "Give your AI agent the ability to capture website screenshots. Works with Claude, Cursor, and any MCP client. Supports full-page, dark mode, mobile emulation, OG image generation, base64 output, custom viewport, and ad blocking. 200 free screenshots/month.",
+  "repository": "https://github.com/screenshotrun/screenshotrun-mcp",
+  "homepage": "https://screenshotrun.com/features/mcp-server",
+  "packages": [
+    {
+      "registry_name": "npm",
+      "name": "screenshotrun-mcp",
+      "version": "latest",
+      "runtime_hint": "npx",
+      "environment_variables": [
+        {
+          "name": "SCREENSHOTRUN_API_KEY",
+          "description": "Your ScreenshotRun API key. Get one free at screenshotrun.com (200 screenshots/month).",
+          "required": true
+        }
+      ]
+    }
+  ]
+}
