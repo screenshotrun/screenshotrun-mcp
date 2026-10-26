@@ -93,24 +93,89 @@ function sleep(ms: number): Promise<void> {
 // --- Types ---
 
 export interface ScreenshotOptions {
-  url: string;
+  // Source (one required)
+  url?: string;
+  html?: string;
+  markdown?: string;
+
+  // Output
   format?: string;
+  quality?: number;
+  response_type?: string;
+
+  // Viewport
   width?: number;
   height?: number;
   full_page?: boolean;
-  quality?: number;
   device?: string;
+  retina?: boolean;
+  device_scale_factor?: number;
+
+  // Appearance
   dark_mode?: boolean;
+  omit_background?: boolean;
+  media_type?: string;
+  reduced_motion?: boolean;
+  disable_animations?: boolean;
+
+  // Blocking
   block_ads?: boolean;
   block_cookies?: boolean;
-  delay?: number;
-  retina?: boolean;
+  block_chats?: boolean;
+  block_requests?: string[];
+  block_resources?: string[];
+
+  // Interaction
+  selector?: string;
+  click_selector?: string;
+  hover_selector?: string;
+  scroll_to?: string;
+  hide_selectors?: string[];
+  wait_for_selector?: string;
+
+  // Injection
   css?: string;
   js?: string;
-  selector?: string;
-  hide_selectors?: string[];
-  click_selector?: string;
-  scroll_to?: string;
+  headers?: Record<string, string>;
+  cookies?: Array<{ name: string; value: string; domain?: string }>;
+  user_agent?: string;
+
+  // Timing
+  delay?: number;
+  timeout?: number;
+  navigation_timeout?: number;
+  wait_until?: string;
+
+  // Clipping & resizing
+  resize_width?: number;
+  resize_height?: number;
+  clip?: { x: number; y: number; width: number; height: number };
+
+  // Advanced
+  stealth?: boolean;
+  bypass_csp?: boolean;
+  cache_ttl?: number;
+  extract_metadata?: boolean;
+  certified?: boolean;
+  webhook_url?: string;
+
+  // Geolocation
+  geolocation?: { latitude: number; longitude: number; accuracy?: number };
+  timezone?: string;
+  proxy?: string;
+
+  // PDF
+  pdf_landscape?: boolean;
+  pdf_page_format?: string;
+  pdf_margin_top?: string;
+  pdf_margin_right?: string;
+  pdf_margin_bottom?: string;
+  pdf_margin_left?: string;
+
+  // Video
+  scroll_video?: boolean;
+  scroll_duration?: number;
+  scroll_speed?: string;
 }
 
 interface ScreenshotData {
@@ -125,7 +190,29 @@ interface ScreenshotData {
   height?: number;
   processing_time_ms?: number;
   completed_at?: string;
+  metadata?: PageMetadata;
   error?: { message: string; code: string };
+}
+
+export interface PageMetadata {
+  title?: string;
+  description?: string;
+  favicon?: string;
+  http_status?: number;
+  og?: {
+    title?: string;
+    description?: string;
+    image?: string;
+    url?: string;
+    type?: string;
+    site_name?: string;
+  };
+  twitter?: {
+    card?: string;
+    title?: string;
+    description?: string;
+    image?: string;
+  };
 }
 
 interface ApiResponse<T> {
@@ -140,6 +227,7 @@ export interface ScreenshotResult {
   url: string;
   file_size: number;
   processing_time_ms: number;
+  metadata?: PageMetadata;
 }
 
 export interface UsageResult {
@@ -206,6 +294,7 @@ export async function takeScreenshot(
     url: screenshot.url,
     file_size: screenshot.file_size ?? 0,
     processing_time_ms: screenshot.processing_time_ms ?? 0,
+    metadata: screenshot.metadata,
   };
 }
 
