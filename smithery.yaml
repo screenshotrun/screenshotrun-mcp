@@ -1,0 +1,15 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - apiKey
+    properties:
+      apiKey:
+        type: string
+        description: ScreenshotRun API key from https://screenshotrun.com/dashboard/api
+  commandFunction:
+    |-
+    (config) => ({ command: 'npx', args: ['-y', 'screenshotrun-mcp'], env: { SCREENSHOTRUN_API_KEY: config.apiKey } })
