@@ -302,3 +302,89 @@ export async function checkUsage(): Promise<UsageResult> {
   const { data } = await request<ApiResponse<UsageResult>>("/account/usage");
   return data;
 }
+
+// --- Page Analysis ---
+
+export interface AnalyzeOptions {
+  url: string;
+  include?: string[];
+  visible_only?: boolean;
+  scope?: string;
+  with_screenshot?: boolean;
+  width?: number;
+  height?: number;
+  device?: string;
+  dark_mode?: boolean;
+  block_ads?: boolean;
+  block_cookies?: boolean;
+  block_chats?: boolean;
+  delay?: number;
+  timeout?: number;
+  stealth?: boolean;
+  css?: string;
+  js?: string;
+  hide_selectors?: string[];
+  wait_for_selector?: string;
+  user_agent?: string;
+  proxy?: string;
+  timezone?: string;
+  geolocation?: { latitude: number; longitude: number; accuracy?: number };
+  headers?: Record<string, string>;
+  cookies?: Array<{ name: string; value: string; domain?: string }>;
+}
+
+export interface AnalyzeResult {
+  meta: {
+    status?: number;
+    took?: number;
+    screenshot_url?: string | null;
+    requests?: number;
+    trial?: boolean;
+    left?: number;
+    tokens?: number;
+    bytes?: number;
+  };
+  result: {
+    url?: string;
+    page?: {
+      title?: string;
+      description?: string;
+      language?: string;
+      viewport?: { width: number; height: number };
+    };
+    headings?: Array<{ level: number; text: string; rect: number[] }>;
+    interactive?: Array<{
+      tag: string;
+      text?: string;
+      href?: string;
+      role?: string;
+      type?: string;
+      rect: number[];
+    }>;
+    forms?: Array<{
+      action?: string;
+      method?: string;
+      fields?: number;
+      rect: number[];
+    }>;
+    images?: Array<{
+      src?: string;
+      alt?: string;
+      width?: number;
+      height?: number;
+      rect: number[];
+    }>;
+    navigation?: Array<{ text?: string; href?: string; rect: number[] }>;
+    stats?: Record<string, number>;
+  };
+}
+
+export async function analyzePage(
+  options: AnalyzeOptions
+): Promise<AnalyzeResult> {
+  const result = await request<AnalyzeResult>("/analyze", {
+    method: "POST",
+    body: JSON.stringify(options),
+  });
+  return result;
+}

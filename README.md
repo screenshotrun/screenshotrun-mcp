@@ -21,6 +21,7 @@ Give your AI agent the ability to see any webpage. MCP server for [ScreenshotRun
 - Stealth mode to avoid bot detection
 - Transparent background, clipping, and output resizing
 - Extract page metadata (title, description, OG tags, Twitter Card)
+- Analyze page structure — headings, interactive elements, forms, images, navigation with bounding rectangles
 - Certified screenshots with SHA-256 hash
 - PDF output with custom page format and margins
 - Scroll video recording
@@ -209,6 +210,55 @@ Capture a screenshot of any webpage, raw HTML, or Markdown. Returns the image as
 | `scroll_duration` | number | Duration 2-30 seconds |
 | `scroll_speed` | `slow` \| `medium` \| `fast` | Scroll speed |
 
+### `analyze_page`
+
+Analyze any webpage and get structured data about its content. Returns headings, interactive elements (buttons, links, inputs), forms, images, and navigation links — each with a bounding rectangle `[x, y, width, height]` for visual mapping. Pro feature with 20 free trial runs per month.
+
+#### Core Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `url` | string | **required** | URL to analyze (http:// or https://) |
+| `include` | string[] | all | Categories to return: `headings`, `interactive`, `forms`, `images`, `text`, `navigation` |
+| `visible_only` | boolean | true | Only return visible elements |
+| `scope` | string | -- | CSS selector to limit analysis to a section (e.g. `main`, `#content`) |
+| `with_screenshot` | boolean | false | Capture screenshot alongside analysis (costs 1 extra request) |
+
+#### Viewport & Appearance
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | number | 1280 | Viewport width (320-3840) |
+| `height` | number | 800 | Viewport height (200-2160) |
+| `device` | `desktop` \| `mobile` \| `tablet` | -- | Device preset |
+| `dark_mode` | boolean | false | Enable dark mode |
+
+#### Blocking & Timing
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `block_ads` | boolean | false | Block advertisements |
+| `block_cookies` | boolean | true | Block cookie consent dialogs |
+| `block_chats` | boolean | false | Block live chat widgets |
+| `delay` | number | 0 | Seconds to wait after load (0-10) |
+| `timeout` | number | 30 | Max page load time (5-60s) |
+| `stealth` | boolean | false | Stealth mode |
+
+#### Injection & Advanced
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `css` | string | Custom CSS (max 10KB) |
+| `js` | string | Custom JavaScript (max 10KB) |
+| `hide_selectors` | string[] | Elements to hide before analysis |
+| `wait_for_selector` | string | Wait for element to appear |
+| `user_agent` | string | Custom User-Agent |
+| `proxy` | string | HTTP/SOCKS proxy URL |
+| `timezone` | string | e.g. `America/New_York` |
+| `geolocation` | object | `{latitude, longitude, accuracy?}` |
+| `headers` | object | Custom HTTP headers |
+| `cookies` | array | Cookies to set (`{name, value, domain?}`) |
+
 ### `extract_content`
 
 Extract page metadata from any URL without downloading the full image. Returns title, description, Open Graph tags, Twitter Card tags, favicon URL, and HTTP status. Useful for SEO audits, content analysis, and link previews.
@@ -235,16 +285,19 @@ No parameters required.
 - "Take a screenshot with transparent background for my design comp"
 - "Wait for the `.loading-spinner` to disappear, then screenshot"
 - "Click the 'Show More' button, then capture the page"
+- "Analyze the page structure of competitor.com — show me all headings and interactive elements"
+- "What forms and images are on this landing page?"
+- "Analyze example.com on mobile and show me the navigation links"
 - "Extract the OG tags and meta description from competitor.com"
 - "Check how many screenshots I have left this month"
 
 ## How It Works
 
-1. Your AI agent receives a user request involving a webpage screenshot
-2. The agent calls the `take_screenshot` tool with the URL and options
+1. Your AI agent receives a user request involving a webpage
+2. The agent calls the appropriate tool (`take_screenshot`, `analyze_page`, or `extract_content`)
 3. The MCP server sends the request to the ScreenshotRun API
-4. The API renders the page in a real browser and returns the screenshot
-5. The image is returned to the AI agent as base64, which it can analyze and describe
+4. The API renders the page in a real browser and returns the result
+5. Screenshots are returned as base64 images; analysis results are returned as structured text with element positions
 
 ## Requirements
 

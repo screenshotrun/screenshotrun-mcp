@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { takeScreenshot, checkUsage } from "./api.js";
+import { takeScreenshot, checkUsage, analyzePage } from "./api.js";
 
 export function registerTools(server: McpServer): void {
   // --- take_screenshot ---
@@ -492,6 +492,249 @@ export function registerTools(server: McpServer): void {
             },
           ],
         };
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Unknown error occurred";
+        return {
+          content: [{ type: "text" as const, text: `Error: ${message}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // --- analyze_page ---
+  server.tool(
+    "analyze_page",
+    "Analyze any webpage and get structured data about its content: headings, interactive elements (buttons, links, inputs), forms, images, and navigation links. Each element includes its bounding rectangle [x, y, width, height] for visual mapping. Optionally capture a screenshot alongside the analysis. Pro feature with 20 free trial runs per month.",
+    {
+      url: z
+        .string()
+        .url()
+        .describe("URL of the page to analyze (must start with http:// or https://)"),
+      include: z
+        .array(z.enum(["headings", "interactive", "forms", "images", "text", "navigation"]))
+        .optional()
+        .describe("Which element categories to return. Empty array or omit for all categories"),
+      visible_only: z
+        .boolean()
+        .default(true)
+        .describe("Only return elements visible in the viewport"),
+      scope: z
+        .string()
+        .max(500)
+        .optional()
+        .describe("CSS selector to limit analysis to a specific section (e.g. 'main', '#content')"),
+      with_screenshot: z
+        .boolean()
+        .default(false)
+        .describe("Capture a viewport screenshot alongside the analysis (costs 1 extra API request)"),
+      width: z
+        .number()
+        .int()
+        .min(320)
+        .max(3840)
+        .default(1280)
+        .describe("Viewport width in pixels"),
+      height: z
+        .number()
+        .int()
+        .min(200)
+        .max(2160)
+        .default(800)
+        .describe("Viewport height in pixels"),
+      device: z
+        .enum(["desktop", "mobile", "tablet"])
+        .optional()
+        .describe("Device preset (affects viewport and user agent)"),
+      dark_mode: z
+        .boolean()
+        .default(false)
+        .describe("Enable dark mode (prefers-color-scheme: dark)"),
+      block_ads: z
+        .boolean()
+        .default(false)
+        .describe("Block advertisements"),
+      block_cookies: z
+        .boolean()
+        .default(true)
+        .describe("Block cookie consent dialogs"),
+      block_chats: z
+        .boolean()
+        .default(false)
+        .describe("Block live chat widgets"),
+      delay: z
+        .number()
+        .int()
+        .min(0)
+        .max(10)
+        .default(0)
+        .describe("Delay in seconds after page load before analyzing"),
+      timeout: z
+        .number()
+        .int()
+        .min(5)
+        .max(60)
+        .optional()
+        .describe("Maximum time in seconds to wait for the page to load"),
+      stealth: z
+        .boolean()
+        .default(false)
+        .describe("Enable stealth mode to avoid bot detection"),
+      css: z
+        .string()
+        .max(10240)
+        .optional()
+        .describe("Custom CSS to inject before analysis"),
+      js: z
+        .string()
+        .max(10240)
+        .optional()
+        .describe("Custom JavaScript to execute before analysis"),
+      hide_selectors: z
+        .array(z.string().max(500))
+        .max(20)
+        .optional()
+        .describe("CSS selectors of elements to hide before analysis"),
+      wait_for_selector: z
+        .string()
+        .max(500)
+        .optional()
+        .describe("Wait for this CSS selector to appear before analyzing"),
+      user_agent: z
+        .string()
+        .max(500)
+        .optional()
+        .describe("Custom User-Agent string"),
+      proxy: z
+        .string()
+        .max(2048)
+        .optional()
+        .describe("HTTP/SOCKS proxy URL"),
+      timezone: z
+        .string()
+        .max(100)
+        .optional()
+        .describe("Emulate timezone (e.g. 'America/New_York')"),
+      geolocation: z
+        .object({
+          latitude: z.number().min(-90).max(90),
+          longitude: z.number().min(-180).max(180),
+          accuracy: z.number().min(0).optional(),
+        })
+        .optional()
+        .describe("Emulate geolocation"),
+      headers: z
+        .record(z.string().max(2048))
+        .optional()
+        .describe("Custom HTTP headers as key-value pairs"),
+      cookies: z
+        .array(z.object({
+          name: z.string().max(255),
+          value: z.string().max(4096),
+          domain: z.string().max(255).optional(),
+        }))
+        .max(20)
+        .optional()
+        .describe("Cookies to set before page load"),
+    },
+    async (params) => {
+      try {
+        if (!/^https?:\/\//i.test(params.url)) {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: "Error: URL must start with http:// or https://",
+              },
+            ],
+          };
+        }
+
+        const result = await analyzePage(params);
+        const { meta, result: data } = result;
+
+        const lines: string[] = [
+          `Page Analysis for ${data.url ?? params.url}`,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+        ];
+
+        if (meta.status) lines.push(`HTTP Status: ${meta.status}`);
+        if (meta.took) lines.push(`Processing time: ${meta.took}s`);
+        if (meta.requests) lines.push(`API requests used: ${meta.requests}`);
+        if (meta.trial) lines.push(`Trial mode: ${meta.left ?? 0} runs remaining this month`);
+
+        if (data.page) {
+          lines.push(`\nPage Info:`);
+          if (data.page.title) lines.push(`  Title: ${data.page.title}`);
+          if (data.page.description) lines.push(`  Description: ${data.page.description}`);
+          if (data.page.language) lines.push(`  Language: ${data.page.language}`);
+          if (data.page.viewport) lines.push(`  Viewport: ${data.page.viewport.width}×${data.page.viewport.height}`);
+        }
+
+        if (data.stats) {
+          lines.push(`\nElement Counts:`);
+          for (const [key, count] of Object.entries(data.stats)) {
+            lines.push(`  ${key}: ${count}`);
+          }
+        }
+
+        if (data.headings?.length) {
+          lines.push(`\nHeadings:`);
+          for (const h of data.headings) {
+            lines.push(`  h${h.level}: ${h.text} [${h.rect.join(", ")}]`);
+          }
+        }
+
+        if (data.interactive?.length) {
+          lines.push(`\nInteractive Elements (${data.interactive.length}):`);
+          for (const el of data.interactive) {
+            const label = el.text || el.href || "(no label)";
+            const extra = el.role ? ` role=${el.role}` : el.type ? ` type=${el.type}` : "";
+            lines.push(`  <${el.tag}${extra}> ${label} [${el.rect.join(", ")}]`);
+          }
+        }
+
+        if (data.forms?.length) {
+          lines.push(`\nForms (${data.forms.length}):`);
+          for (const f of data.forms) {
+            lines.push(`  ${f.method ?? "GET"} ${f.action ?? "(same page)"} — ${f.fields ?? 0} fields [${f.rect.join(", ")}]`);
+          }
+        }
+
+        if (data.images?.length) {
+          lines.push(`\nImages (${data.images.length}):`);
+          for (const img of data.images) {
+            const alt = img.alt || "(no alt)";
+            lines.push(`  ${alt} — ${img.src ?? ""} [${img.rect.join(", ")}]`);
+          }
+        }
+
+        if (data.navigation?.length) {
+          lines.push(`\nNavigation Links (${data.navigation.length}):`);
+          for (const nav of data.navigation) {
+            lines.push(`  ${nav.text ?? ""} → ${nav.href ?? ""} [${nav.rect.join(", ")}]`);
+          }
+        }
+
+        const content: Array<{ type: "text"; text: string }> = [
+          { type: "text" as const, text: lines.join("\n") },
+        ];
+
+        // Add raw JSON for programmatic use
+        content.push({
+          type: "text" as const,
+          text: `\nRaw JSON:\n${JSON.stringify(result, null, 2)}`,
+        });
+
+        if (meta.screenshot_url) {
+          content.push({
+            type: "text" as const,
+            text: `\nScreenshot URL: ${meta.screenshot_url}`,
+          });
+        }
+
+        return { content };
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : "Unknown error occurred";

@@ -1,8 +1,8 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.webmox/screenshotrun-mcp",
-  "description": "Capture website screenshots, render HTML/Markdown, and extract page metadata in AI agents. Full-page, dark mode, mobile, geolocation, stealth, CSS/JS injection, certified screenshots, base64.",
-  "version": "1.1.0",
+  "description": "Capture website screenshots, render HTML/Markdown, extract page metadata, and analyze page structure in AI agents. Full-page, dark mode, mobile, geolocation, stealth, CSS/JS injection, certified screenshots, page analysis with element positions.",
+  "version": "1.2.0",
   "repository": {
     "url": "https://github.com/webmox/screenshotrun-mcp",
     "source": "github"
@@ -12,7 +12,7 @@
     {
       "registryType": "npm",
       "identifier": "screenshotrun-mcp",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"
