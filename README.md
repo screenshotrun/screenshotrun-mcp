@@ -2,6 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/screenshotrun-mcp.svg)](https://www.npmjs.com/package/screenshotrun-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![screenshotrun-mcp MCP server](https://glama.ai/mcp/servers/screenshotrun/screenshotrun-mcp/badges/score.svg)](https://glama.ai/mcp/servers/screenshotrun/screenshotrun-mcp)
 
 Give your AI agent the ability to see any webpage. MCP server for [ScreenshotRun](https://screenshotrun.com) Screenshot API.
 
